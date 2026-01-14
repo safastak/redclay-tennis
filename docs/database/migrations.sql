@@ -53,6 +53,34 @@ COMMENT ON COLUMN users.user_type IS 'NEW users require booking approval, PREMIU
 COMMENT ON COLUMN users.app_role IS 'user=customer, trainer=instructor, admin=full access';
 
 -- ============================================================================
+-- USER AUTHENTICATION
+-- ============================================================================
+
+CREATE TABLE user_auth (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  password_hash TEXT NOT NULL,
+
+  -- Password management
+  password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reset_token TEXT,
+  reset_token_expires TIMESTAMP,
+
+  -- Security tracking
+  last_login_at TIMESTAMP,
+  failed_login_attempts INTEGER DEFAULT 0,
+  locked_until TIMESTAMP,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_auth_user_id ON user_auth(user_id);
+CREATE INDEX idx_user_auth_reset_token ON user_auth(reset_token);
+
+COMMENT ON TABLE user_auth IS 'Stores password hashes and authentication security data';
+
+-- ============================================================================
 -- COURTS
 -- ============================================================================
 
@@ -671,6 +699,9 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER update_user_auth_updated_at BEFORE UPDATE ON user_auth
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 CREATE TRIGGER update_courts_updated_at BEFORE UPDATE ON courts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
@@ -695,7 +726,17 @@ CREATE TRIGGER update_booking_invites_updated_at BEFORE UPDATE ON booking_invite
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
+-- NOTE: RLS policies are commented out for standard Neon PostgreSQL setup.
+-- The application uses JWT authentication at the application layer.
+-- Uncomment and configure these policies if you want database-level security.
+--
+-- To enable RLS, you would need to:
+-- 1. Create an auth schema and auth.uid() function
+-- 2. Uncomment the policies below
+-- 3. Configure your application to set the current user context
+-- ============================================================================
 
+/*
 -- Enable RLS on all user-facing tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
@@ -705,9 +746,6 @@ ALTER TABLE waitlists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE telegram_users ENABLE ROW LEVEL SECURITY;
-
--- NOTE: auth.uid() function must be provided by your authentication system
--- Example: Neon, Supabase, or custom JWT implementation
 
 -- Users policies
 CREATE POLICY users_select_own ON users
@@ -798,6 +836,7 @@ CREATE POLICY waitlists_insert_own ON waitlists
 
 CREATE POLICY waitlists_delete_own ON waitlists
   FOR DELETE USING (user_id = auth.uid());
+*/
 
 -- ============================================================================
 -- SEED DATA (Optional)
