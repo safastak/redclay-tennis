@@ -49,7 +49,7 @@ export default function AdminHeader({ user }: { user: any }) {
 
           {/* User avatar */}
           <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
-            {user.name?.charAt(0) || 'A'}
+            {user.email?.charAt(0).toUpperCase() || 'A'}
           </div>
         </div>
       </div>
