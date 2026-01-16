@@ -51,11 +51,33 @@ export async function GET(request: NextRequest) {
       WHERE status = 'pending'
     `)
 
+    // Convert PostgreSQL bigint/numeric strings to numbers
+    const today = todayResult.rows[0]
+    const revenue = revenueResult.rows[0]
+    const users = userResult.rows[0]
+    const pending = pendingResult.rows[0]
+
     return NextResponse.json({
-      today: todayResult.rows[0],
-      revenue: revenueResult.rows[0],
-      users: userResult.rows[0],
-      pending: pendingResult.rows[0],
+      today: {
+        total: parseInt(today.total, 10),
+        pending: parseInt(today.pending, 10),
+        confirmed: parseInt(today.confirmed, 10),
+      },
+      revenue: {
+        last_7_days: parseFloat(revenue.last_7_days) || 0,
+        last_30_days: parseFloat(revenue.last_30_days) || 0,
+        all_time: parseFloat(revenue.all_time) || 0,
+      },
+      users: {
+        total_users: parseInt(users.total_users, 10),
+        new_users: parseInt(users.new_users, 10),
+        premium_users: parseInt(users.premium_users, 10),
+        users_last_30_days: parseInt(users.users_last_30_days, 10),
+      },
+      pending: {
+        pending_bookings: parseInt(pending.pending_bookings, 10),
+        waitlist_count: parseInt(pending.waitlist_count, 10),
+      },
     })
   } catch (error) {
     return handleApiError(error)

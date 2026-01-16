@@ -101,7 +101,7 @@ describe('Admin Bookings E2E', () => {
 
         // Validate types
         expect(typeof booking.status).toBe('string')
-        expect(['pending', 'confirmed', 'rejected', 'cancelled', 'completed']).toContain(booking.status)
+        expect(['pending', 'confirmed', 'rejected', 'cancelled', 'completed', 'no_show']).toContain(booking.status)
       }
     })
 

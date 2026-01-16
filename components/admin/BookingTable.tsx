@@ -14,7 +14,7 @@ interface Booking {
   booking_date: string
   start_time: string
   end_time: string
-  status: 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed'
+  status: 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed' | 'no_show'
   court_fee?: number
   trainer_fee?: number
 }
