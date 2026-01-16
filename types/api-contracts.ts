@@ -32,7 +32,7 @@ export const AdminBookingSchema = z.object({
   booking_date: z.string(),
   start_time: z.string(),
   end_time: z.string(),
-  status: z.enum(['pending', 'confirmed', 'rejected', 'cancelled', 'completed']),
+  status: z.enum(['pending', 'confirmed', 'rejected', 'cancelled', 'completed', 'no_show']),
   court_name: z.string(),
   sport_type: z.string(),
   user_name: z.string(),
@@ -58,14 +58,26 @@ export type AdminBookingsResponse = z.infer<typeof AdminBookingsResponseSchema>
 
 // Admin Dashboard API Contract
 export const DashboardStatsSchema = z.object({
-  totalBookings: z.number(),
-  pendingBookings: z.number(),
-  confirmedBookings: z.number(),
-  totalRevenue: z.number(),
-  activeUsers: z.number(),
-  newUsersThisMonth: z.number(),
-  recentBookings: z.array(AdminBookingSchema),
-  recentUsers: z.array(AdminUserSchema),
+  today: z.object({
+    total: z.number(),
+    pending: z.number(),
+    confirmed: z.number(),
+  }),
+  revenue: z.object({
+    last_7_days: z.number(),
+    last_30_days: z.number(),
+    all_time: z.number(),
+  }),
+  users: z.object({
+    total_users: z.number(),
+    new_users: z.number(),
+    premium_users: z.number(),
+    users_last_30_days: z.number(),
+  }),
+  pending: z.object({
+    pending_bookings: z.number(),
+    waitlist_count: z.number(),
+  }),
 })
 
 export type DashboardStats = z.infer<typeof DashboardStatsSchema>

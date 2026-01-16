@@ -3,10 +3,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchDashboardStats } from '@/lib/api/admin'
 import StatsCard from '@/components/admin/StatsCard'
-import StatusBadge from '@/components/admin/StatusBadge'
-import { Calendar, Users, Package, DollarSign, Clock, TrendingUp } from 'lucide-react'
+import { Calendar, Users, Package, DollarSign, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { formatDate, formatTime, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 export default function AdminDashboardPage() {
   const { data, isLoading } = useQuery({
@@ -23,8 +22,7 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const pendingBookings = data?.pendingBookings || 0
-  const recentBookings = data?.recentBookings || []
+  const pendingBookings = data?.pending?.pending_bookings || 0
 
   return (
     <div>
@@ -65,76 +63,29 @@ export default function AdminDashboardPage() {
         </h2>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatsCard
-            title="Total Bookings"
-            value={data?.totalBookings || 0}
+            title="Today's Bookings"
+            value={data?.today?.total || 0}
             icon={Calendar}
             color="blue"
           />
           <StatsCard
             title="Pending"
-            value={data?.pendingBookings || 0}
+            value={data?.pending?.pending_bookings || 0}
             icon={Clock}
             color="orange"
           />
           <StatsCard
             title="Active Users"
-            value={data?.activeUsers || 0}
+            value={data?.users?.total_users || 0}
             icon={Users}
             color="green"
           />
           <StatsCard
             title="Total Revenue"
-            value={formatCurrency(data?.totalRevenue || 0)}
+            value={formatCurrency(data?.revenue?.all_time || 0)}
             icon={DollarSign}
             color="red"
           />
-        </div>
-      </div>
-
-      {/* Recent Bookings */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Recent Bookings
-          </h2>
-          <Link
-            href="/admin/bookings"
-            className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-500"
-          >
-            View All →
-          </Link>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {recentBookings.length === 0 ? (
-            <p className="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-              No recent bookings
-            </p>
-          ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {recentBookings.map((booking: any) => (
-                <div
-                  key={booking.id}
-                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {booking.user_name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {booking.court_name} • {formatDate(booking.booking_date)} at{' '}
-                        {formatTime(booking.start_time)}
-                      </p>
-                    </div>
-                    <div className="ml-4">
-                      <StatusBadge status={booking.status} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
