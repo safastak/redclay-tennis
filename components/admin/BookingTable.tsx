@@ -14,9 +14,9 @@ interface Booking {
   booking_date: string
   start_time: string
   end_time: string
-  status: 'pending' | 'confirmed' | 'active' | 'expired' | 'cancelled'
-  court_fee: number
-  trainer_fee: number
+  status: 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed'
+  court_fee?: number
+  trainer_fee?: number
 }
 
 export default function BookingTable({
@@ -100,7 +100,7 @@ export default function BookingTable({
                       <StatusBadge status={booking.status} />
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      ${(booking.court_fee + booking.trainer_fee).toFixed(2)}
+                      ${((booking.court_fee || 0) + (booking.trainer_fee || 0)).toFixed(2)}
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                       {booking.status === 'pending' && (

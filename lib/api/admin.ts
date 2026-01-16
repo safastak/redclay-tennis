@@ -1,3 +1,5 @@
+import { AdminUsersResponseSchema, AdminBookingsResponseSchema, DashboardStatsSchema } from '@/types/api-contracts'
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api'
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -20,12 +22,15 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json()
 }
 
-// Admin Bookings
+// Admin Bookings with validation
 export async function fetchAdminBookings(filters: any) {
   const params = new URLSearchParams(
     Object.entries(filters).filter(([_, v]) => v != null) as [string, string][]
   )
-  return fetchWithAuth(`/admin/bookings?${params}`)
+  const data = await fetchWithAuth(`/admin/bookings?${params}`)
+
+  // Runtime validation
+  return AdminBookingsResponseSchema.parse(data)
 }
 
 export async function updateBookingStatus(id: string, status: string, notes?: string) {
@@ -35,12 +40,15 @@ export async function updateBookingStatus(id: string, status: string, notes?: st
   })
 }
 
-// Admin Users
+// Admin Users with validation
 export async function fetchAdminUsers(filters: any) {
   const params = new URLSearchParams(
     Object.entries(filters).filter(([_, v]) => v != null) as [string, string][]
   )
-  return fetchWithAuth(`/admin/users?${params}`)
+  const data = await fetchWithAuth(`/admin/users?${params}`)
+
+  // Runtime validation
+  return AdminUsersResponseSchema.parse(data)
 }
 
 export async function fetchUserById(id: string) {
@@ -101,9 +109,12 @@ export async function removeFromWaitlist(id: string) {
   })
 }
 
-// Admin Dashboard
+// Dashboard Stats with validation
 export async function fetchDashboardStats() {
-  return fetchWithAuth('/admin/dashboard')
+  const data = await fetchWithAuth('/admin/dashboard')
+
+  // Runtime validation
+  return DashboardStatsSchema.parse(data)
 }
 
 // Admin Analytics

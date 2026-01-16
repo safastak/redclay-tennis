@@ -23,92 +23,68 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const stats = data?.stats || {}
-  const pendingBookings = data?.pending_bookings || []
-  const packageRequests = data?.package_requests || []
-  const recentBookings = data?.recent_bookings || []
+  const pendingBookings = data?.pendingBookings || 0
+  const recentBookings = data?.recentBookings || []
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Dashboard</h1>
 
       {/* Pending Actions */}
-      {(pendingBookings.length > 0 || packageRequests.length > 0) && (
+      {pendingBookings > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Pending Actions
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {pendingBookings.length > 0 && (
-              <Link
-                href="/admin/bookings?status=pending"
-                className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/50 rounded-xl p-6 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                  <span className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                    {pendingBookings.length}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Pending Bookings
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Review and approve bookings
-                </p>
-              </Link>
-            )}
-
-            {packageRequests.length > 0 && (
-              <Link
-                href="/admin/packages"
-                className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/50 rounded-xl p-6 hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <Package className="h-6 w-6 text-green-600 dark:text-green-400" />
-                  <span className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {packageRequests.length}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Package Requests
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Confirm cash payments
-                </p>
-              </Link>
-            )}
+            <Link
+              href="/admin/bookings?status=pending"
+              className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/50 rounded-xl p-6 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <span className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                  {pendingBookings}
+                </span>
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Pending Bookings
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Review and approve bookings
+              </p>
+            </Link>
           </div>
         </div>
       )}
 
-      {/* Today's Stats */}
+      {/* Overall Stats */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Today's Stats
+          Overall Stats
         </h2>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatsCard
-            title="Bookings"
-            value={stats.today_bookings || 0}
+            title="Total Bookings"
+            value={data?.totalBookings || 0}
             icon={Calendar}
             color="blue"
           />
           <StatsCard
             title="Pending"
-            value={stats.pending_bookings || 0}
+            value={data?.pendingBookings || 0}
             icon={Clock}
             color="orange"
           />
           <StatsCard
-            title="New Users"
-            value={stats.new_users || 0}
+            title="Active Users"
+            value={data?.activeUsers || 0}
             icon={Users}
             color="green"
           />
           <StatsCard
-            title="Revenue"
-            value={formatCurrency(stats.today_revenue || 0)}
+            title="Total Revenue"
+            value={formatCurrency(data?.totalRevenue || 0)}
             icon={DollarSign}
             color="red"
           />
