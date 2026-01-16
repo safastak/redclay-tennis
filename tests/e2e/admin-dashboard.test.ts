@@ -49,6 +49,44 @@ describe('Admin Dashboard & Analytics E2E', () => {
       expect(data.pending).toBeDefined()
     })
 
+    it('should return dashboard stats with correct structure', async () => {
+      const request = new NextRequest('http://localhost:3000/api/admin/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      })
+
+      const response = await getDashboard(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+
+      // Validate top-level structure
+      expect(data).toHaveProperty('today')
+      expect(data).toHaveProperty('revenue')
+      expect(data).toHaveProperty('users')
+      expect(data).toHaveProperty('pending')
+
+      // Validate today stats
+      expect(data.today).toHaveProperty('total')
+      expect(data.today).toHaveProperty('pending')
+      expect(data.today).toHaveProperty('confirmed')
+
+      // Validate revenue stats
+      expect(data.revenue).toHaveProperty('last_7_days')
+      expect(data.revenue).toHaveProperty('last_30_days')
+      expect(data.revenue).toHaveProperty('all_time')
+
+      // Validate user stats
+      expect(data.users).toHaveProperty('total_users')
+      expect(data.users).toHaveProperty('new_users')
+      expect(data.users).toHaveProperty('premium_users')
+
+      // Validate pending stats
+      expect(data.pending).toHaveProperty('pending_bookings')
+      expect(data.pending).toHaveProperty('waitlist_count')
+    })
+
     it('should reject non-admin access', async () => {
       const request = new NextRequest('http://localhost:3000/api/admin/dashboard', {
         headers: {

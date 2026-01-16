@@ -6,7 +6,7 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testEnvironment: 'jsdom', // Changed from 'node' to support React components
+  testEnvironment: 'node', // Use node environment for API route tests
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },

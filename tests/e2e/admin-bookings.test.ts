@@ -72,6 +72,39 @@ describe('Admin Bookings E2E', () => {
       expect(Array.isArray(data.bookings)).toBe(true)
     })
 
+    it('should return bookings with correct field structure', async () => {
+      const request = new NextRequest('http://localhost:3000/api/admin/bookings', {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      })
+
+      const response = await getBookings(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+
+      if (data.bookings && data.bookings.length > 0) {
+        const booking = data.bookings[0]
+
+        // Core booking fields
+        expect(booking).toHaveProperty('id')
+        expect(booking).toHaveProperty('booking_date')
+        expect(booking).toHaveProperty('start_time')
+        expect(booking).toHaveProperty('end_time')
+        expect(booking).toHaveProperty('status')
+
+        // Joined fields from other tables
+        expect(booking).toHaveProperty('court_name')
+        expect(booking).toHaveProperty('user_name')
+        expect(booking).toHaveProperty('user_email')
+
+        // Validate types
+        expect(typeof booking.status).toBe('string')
+        expect(['pending', 'confirmed', 'rejected', 'cancelled', 'completed']).toContain(booking.status)
+      }
+    })
+
     it('should reject non-admin users', async () => {
       const request = new NextRequest('http://localhost:3000/api/admin/bookings', {
         headers: {

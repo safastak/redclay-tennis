@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const pendingResult = await query(`
       SELECT
         COUNT(*) FILTER (WHERE booking_date >= CURRENT_DATE) as pending_bookings,
-        (SELECT COUNT(*) FROM waitlist WHERE status = 'pending') as waitlist_count
+        (SELECT COUNT(*) FROM waitlists WHERE status = 'pending') as waitlist_count
       FROM bookings
       WHERE status = 'pending'
     `)
