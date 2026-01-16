@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom'
+import dotenv from 'dotenv'
 
-// Load environment variables for tests
-process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/test'
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key-at-least-32-characters-long'
+// Load .env.local for tests (this provides DATABASE_URL and JWT_SECRET)
+dotenv.config({ path: '.env.local' })
+
+// Set NODE_ENV for tests
 process.env.NODE_ENV = 'test'
