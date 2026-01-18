@@ -9,116 +9,73 @@
  */
 
 import { createTestUser, createTestBooking, generateUUID } from '../helpers';
+import {
+  determineBookingStatus as determineStatus,
+  canCancelBooking as checkCanCancel,
+  canTransitionStatus,
+  isTerminalStatus,
+  type BookingStatus,
+  type UserType,
+  type UserRole,
+} from '@/lib/booking-status';
 
-// Import the module under test (to be implemented)
-// import { determineBookingStatus, canCancelBooking, getStatusTransitions } from '@/lib/booking-status';
-
-// ============================================================================
-// Mock Implementation (remove when real implementation exists)
-// ============================================================================
-
-type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-
-interface StatusDeterminationInput {
-  userType: 'new' | 'regular' | 'premium';
-  role: 'member' | 'admin' | 'trainer';
+// Wrapper to match test interface
+function determineBookingStatus(input: {
+  userType: UserType;
+  role: UserRole;
   isTrainerBooking?: boolean;
-  bookingDate?: string;
+}): BookingStatus {
+  return determineStatus({
+    userType: input.userType,
+    role: input.role,
+    isTrainerBookingOwnCourt: input.isTrainerBooking,
+  });
 }
 
-interface CancellationCheck {
+// Wrapper for cancellation check
+function canCancelBooking(check: {
   bookingStatus: BookingStatus;
   bookingDate: string;
   startTime: string;
   userRole: string;
   isOwnBooking: boolean;
-}
-
-// Stub implementation for TDD - replace with actual import
-function determineBookingStatus(input: StatusDeterminationInput): BookingStatus {
-  // TODO: Implement actual status determination in lib/booking-status.ts
-
-  // Admins always get instant confirmation
-  if (input.role === 'admin') {
-    return 'confirmed';
-  }
-
-  // Premium users get instant confirmation
-  if (input.userType === 'premium') {
-    return 'confirmed';
-  }
-
-  // Regular users get instant confirmation (unless configured otherwise)
-  if (input.userType === 'regular') {
-    return 'confirmed';
-  }
-
-  // New users require approval
-  if (input.userType === 'new') {
-    return 'pending';
-  }
-
-  // Default to pending for safety
-  return 'pending';
-}
-
-function canCancelBooking(check: CancellationCheck): { allowed: boolean; reason?: string } {
-  // TODO: Implement actual cancellation logic in lib/booking-status.ts
-
-  // Already cancelled or completed bookings cannot be cancelled
-  if (check.bookingStatus === 'cancelled' || check.bookingStatus === 'completed') {
-    return { allowed: false, reason: 'Booking is already cancelled or completed' };
-  }
-
-  // Admins can cancel any booking
-  if (check.userRole === 'admin') {
-    return { allowed: true };
-  }
-
-  // Users can only cancel their own bookings
-  if (!check.isOwnBooking) {
-    return { allowed: false, reason: 'Cannot cancel another user\'s booking' };
-  }
-
-  // Check cancellation deadline (24 hours before)
+}): { allowed: boolean; reason?: string } {
   const bookingDateTime = new Date(`${check.bookingDate}T${check.startTime}`);
-  const now = new Date();
-  const hoursUntilBooking = (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-  if (hoursUntilBooking < 24) {
-    return { allowed: false, reason: 'Cannot cancel within 24 hours of booking' };
-  }
-
-  return { allowed: true };
+  return checkCanCancel({
+    bookingStatus: check.bookingStatus,
+    bookingUserId: check.isOwnBooking ? 'user-1' : 'other-user',
+    requestingUserId: 'user-1',
+    requestingUserRole: check.userRole as UserRole,
+    bookingDateTime,
+  });
 }
 
+// Get available status transitions
 function getStatusTransitions(currentStatus: BookingStatus, userRole: string): BookingStatus[] {
-  // TODO: Implement actual transition logic in lib/booking-status.ts
+  if (isTerminalStatus(currentStatus)) {
+    return [];
+  }
 
-  const transitions: Record<BookingStatus, Record<string, BookingStatus[]>> = {
-    pending: {
-      admin: ['confirmed', 'cancelled'],
-      member: ['cancelled'],
-      trainer: ['cancelled'],
-    },
-    confirmed: {
-      admin: ['cancelled', 'completed'],
-      member: ['cancelled'],
-      trainer: ['cancelled'],
-    },
-    cancelled: {
-      admin: [],
-      member: [],
-      trainer: [],
-    },
-    completed: {
-      admin: [],
-      member: [],
-      trainer: [],
-    },
-  };
+  const allTargets: BookingStatus[] = ['pending', 'confirmed', 'cancelled', 'completed'];
+  const allowedTransitions: BookingStatus[] = [];
 
-  return transitions[currentStatus]?.[userRole] || [];
+  for (const target of allTargets) {
+    if (target === currentStatus) continue;
+
+    const result = canTransitionStatus({
+      currentStatus,
+      targetStatus: target,
+      requestingUserRole: userRole as UserRole,
+      bookingUserId: 'user-1',
+      requestingUserId: 'user-1',
+    });
+
+    if (result.allowed) {
+      allowedTransitions.push(target);
+    }
+  }
+
+  return allowedTransitions;
 }
 
 // ============================================================================

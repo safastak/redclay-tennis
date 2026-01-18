@@ -21,14 +21,16 @@ import {
   addTestPackage,
   updateTestPackage,
 } from '../helpers/db';
+import {
+  applyPackageToBooking as applyPackage,
+  isPackageEligible,
+  findEligiblePackage,
+  type UserPackage,
+  type Booking,
+  type DatabaseClient,
+} from '@/lib/packages';
 
-// Import the module under test (to be implemented)
-// import { applyPackageToBooking, findEligiblePackage } from '@/lib/packages';
-
-// ============================================================================
-// Mock Implementation (remove when real implementation exists)
-// ============================================================================
-
+// Wrapper interface to match test expectations
 interface PackageApplicationResult {
   applied: boolean;
   package_id?: string;
@@ -36,56 +38,64 @@ interface PackageApplicationResult {
   reason?: string;
 }
 
-// Stub implementation for TDD - replace with actual import
+// Convert test booking to lib Booking type
+function toLibBooking(testBooking: ReturnType<typeof createTestBooking>): Booking {
+  return {
+    id: testBooking.id,
+    user_id: testBooking.user_id,
+    court_id: testBooking.court_id,
+    booking_date: testBooking.booking_date,
+    start_time: testBooking.start_time,
+    end_time: testBooking.end_time,
+    trainer_id: testBooking.trainer_id,
+    is_peak_time: testBooking.is_peak_time,
+  };
+}
+
+// Convert test package to lib UserPackage type
+function toLibPackage(testPackage: ReturnType<typeof createTestPackage>): UserPackage {
+  return {
+    id: testPackage.id,
+    user_id: testPackage.user_id,
+    package_course_id: testPackage.package_course_id,
+    total_court_sessions: testPackage.total_court_sessions,
+    remaining_court_sessions: testPackage.remaining_court_sessions,
+    total_trainer_sessions: testPackage.total_trainer_sessions,
+    remaining_trainer_sessions: testPackage.remaining_trainer_sessions,
+    valid_from: testPackage.valid_from,
+    valid_until: testPackage.valid_until,
+    peak_access: testPackage.peak_access,
+    status: testPackage.status,
+    created_at: testPackage.created_at,
+    updated_at: testPackage.updated_at,
+  };
+}
+
+// Wrapper to match test expectations
 async function applyPackageToBooking(
-  _client: ReturnType<typeof createMockDatabaseClient>,
-  booking: ReturnType<typeof createTestBooking>
+  client: DatabaseClient,
+  testBooking: ReturnType<typeof createTestBooking>
 ): Promise<PackageApplicationResult> {
-  // TODO: Implement actual package application logic in lib/packages.ts
-  // This stub allows tests to run and fail until implementation is complete
+  const booking = toLibBooking(testBooking);
+  const testPackages = findTestPackagesByUserId(testBooking.user_id);
+  const packages = testPackages.map(toLibPackage);
 
-  const packages = findTestPackagesByUserId(booking.user_id);
-  const activePackage = packages.find(p =>
-    p.status === 'active' &&
-    p.remaining_court_sessions > 0
-  );
+  const result = await applyPackage(client, booking, packages);
 
-  if (!activePackage) {
-    return { applied: false, reason: 'No eligible package found' };
+  // Update test DB state to match
+  if (result.applied && result.package_id) {
+    updateTestPackage(result.package_id, {
+      remaining_court_sessions: result.sessions_remaining,
+      remaining_trainer_sessions: result.trainer_sessions_remaining,
+      status: result.sessions_remaining <= 0 && result.trainer_sessions_remaining <= 0 ? 'depleted' : 'active',
+    });
   }
-
-  // Check peak time eligibility
-  if (booking.is_peak_time && !activePackage.peak_access) {
-    return { applied: false, reason: 'Package does not include peak time access' };
-  }
-
-  // Determine session type
-  const sessionType = booking.trainer_id ? 'trainer_included' : 'court_only';
-
-  // Check trainer session availability
-  if (sessionType === 'trainer_included' && activePackage.remaining_trainer_sessions <= 0) {
-    return { applied: false, reason: 'No trainer sessions remaining' };
-  }
-
-  // Deduct sessions
-  const newCourtSessions = activePackage.remaining_court_sessions - 1;
-  const newTrainerSessions = sessionType === 'trainer_included'
-    ? activePackage.remaining_trainer_sessions - 1
-    : activePackage.remaining_trainer_sessions;
-
-  // Update package status if depleted
-  const newStatus = newCourtSessions <= 0 ? 'depleted' : 'active';
-
-  updateTestPackage(activePackage.id, {
-    remaining_court_sessions: newCourtSessions,
-    remaining_trainer_sessions: newTrainerSessions,
-    status: newStatus as 'active' | 'depleted' | 'expired',
-  });
 
   return {
-    applied: true,
-    package_id: activePackage.id,
-    session_type: sessionType,
+    applied: result.applied,
+    package_id: result.package_id || undefined,
+    session_type: testBooking.trainer_id ? 'trainer_included' : 'court_only',
+    reason: result.reason,
   };
 }
 

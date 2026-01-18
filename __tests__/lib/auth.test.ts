@@ -13,91 +13,32 @@ import {
   generateExpiredTestToken,
   generateUUID,
 } from '../helpers';
+import {
+  generateToken as generateTokenFromUser,
+  verifyToken,
+  hashPassword,
+  verifyPassword,
+  hasRolePermission,
+  decodeToken,
+  getBookingConfirmationType,
+  type User,
+  type UserRole,
+  type UserType,
+} from '@/lib/auth';
 
-// Import the module under test (to be implemented)
-// import { generateToken, verifyToken, hashPassword, verifyPassword } from '@/lib/auth';
-
-// ============================================================================
-// Mock Implementation (remove when real implementation exists)
-// ============================================================================
-
-interface TokenPayload {
-  userId: string;
-  email?: string;
-  role?: 'member' | 'admin' | 'trainer';
-  userType?: 'new' | 'regular' | 'premium';
-  iat?: number;
-  exp?: number;
-}
-
-interface TokenOptions {
-  expiresIn?: string;
-}
-
-// Stub implementation for TDD - replace with actual import
-function generateToken(payload: TokenPayload, options: TokenOptions = {}): string {
-  // TODO: Implement actual JWT generation in lib/auth.ts
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-
-  let exp = Math.floor(Date.now() / 1000) + 3600; // Default 1 hour
-  if (options.expiresIn === '-1h') {
-    exp = Math.floor(Date.now() / 1000) - 3600; // Expired 1 hour ago
-  }
-
-  const body = Buffer.from(JSON.stringify({
-    ...payload,
-    iat: Math.floor(Date.now() / 1000),
-    exp,
-  })).toString('base64url');
-
-  const signature = 'test-signature';
-  return `${header}.${body}.${signature}`;
-}
-
-async function verifyToken(token: string): Promise<TokenPayload> {
-  // TODO: Implement actual JWT verification in lib/auth.ts
-  const parts = token.split('.');
-  if (parts.length !== 3) {
-    throw new Error('Invalid token format');
-  }
-
-  try {
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString()) as TokenPayload;
-
-    // Check expiration
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      throw new Error('Token expired');
-    }
-
-    return payload;
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Token expired') {
-      throw error;
-    }
-    throw new Error('Invalid token');
-  }
-}
-
-async function hashPassword(password: string): Promise<string> {
-  // TODO: Implement actual password hashing in lib/auth.ts
-  // Use bcrypt or argon2 in production
-  return `hashed_${password}`;
-}
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  // TODO: Implement actual password verification in lib/auth.ts
-  return hash === `hashed_${password}`;
-}
-
-function hasPermission(userRole: string, requiredRole: string): boolean {
-  const roleHierarchy: Record<string, number> = {
-    member: 1,
-    trainer: 2,
-    admin: 3,
+// Wrapper to match test expectations
+function generateToken(payload: { userId: string; email?: string; role?: UserRole; userType?: UserType }): string {
+  const user: User = {
+    id: payload.userId,
+    email: payload.email || 'test@example.com',
+    role: payload.role || 'member',
+    userType: payload.userType || 'regular',
   };
-
-  return (roleHierarchy[userRole] || 0) >= (roleHierarchy[requiredRole] || 0);
+  return generateTokenFromUser(user);
 }
+
+// Alias for permission check
+const hasPermission = hasRolePermission;
 
 // ============================================================================
 // Test Suite
