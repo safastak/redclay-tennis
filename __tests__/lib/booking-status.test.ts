@@ -330,9 +330,9 @@ describe('Booking Status', () => {
 
   describe('Integration with User Types', () => {
     test('booking status reflects user type correctly', () => {
-      const newUser = createTestUser({ userType: 'new', role: 'member' });
-      const premiumUser = createTestUser({ userType: 'premium', role: 'member' });
-      const adminUser = createTestUser({ userType: 'new', role: 'admin' });
+      const newUser = createTestUser({ user_type: 'new', role: 'member' });
+      const premiumUser = createTestUser({ user_type: 'premium', role: 'member' });
+      const adminUser = createTestUser({ user_type: 'new', role: 'admin' });
 
       const newUserStatus = determineBookingStatus({
         userType: newUser.user_type,
