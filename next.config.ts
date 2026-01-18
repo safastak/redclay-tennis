@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Enable system TLS certificates for Turbopack
+    turbopackUseSystemTlsCerts: true,
+  },
 };
 
 export default nextConfig;
