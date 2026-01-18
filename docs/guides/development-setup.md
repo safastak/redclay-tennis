@@ -104,12 +104,35 @@ ENABLE_TELEGRAM_BOT=false
    # Should show 14 tables
    ```
 
-5. **Seed Development Data (Optional):**
+5. **Seed Development Data:**
    ```bash
-   # Create seed script: scripts/seed-dev-data.js
-   # Run seed script to populate test data
-   node scripts/seed-dev-data.js
+   # Comprehensive seeding (recommended for development)
+   npm run db:seed:comprehensive
+
+   # Or basic admin user only
+   npm run db:seed
+
+   # Output example:
+   # 🌱 Starting comprehensive database seeding...
+   # 🧹 Cleaning existing data...
+   # 📍 Seeding courts...
+   # 👥 Seeding users...
+   # 🎾 Seeding trainers...
+   # ✅ COMPREHENSIVE DATABASE SEEDING COMPLETE!
    ```
+
+   **What gets seeded:**
+   - 12 users (admin, trainers, premium, new users)
+   - 6 courts (tennis & pickleball)
+   - 2 trainers with schedules
+   - 5 package classes
+   - 6 user packages (various states)
+   - 10 bookings (all states)
+   - 3 waitlist entries
+   - 5 notifications
+   - Booking invites for session sharing
+
+   See [Database Seeding Guide](../database/seeding.md) for complete details.
 
 ---
 

@@ -16,7 +16,7 @@ This document provides a comprehensive technical schema for the Red Clay Tennis 
 **Target Users:** 90% mobile, 10% desktop
 **Architecture:** Serverless-first, edge-optimized
 **Stack:** Neon PostgreSQL + Vercel
-**Security:** Row Level Security (RLS) at database layer
+**Security:** JWT authentication at application layer (with optional RLS)
 **Philosophy:** Automation-first, mobile-first, user-centric
 
 ### Documentation Structure
@@ -185,7 +185,8 @@ erDiagram
 
 | Table | Rows (Est) | Purpose | Key Relationships |
 |-------|------------|---------|-------------------|
-| **users** | 1,000-10,000 | Authentication & profiles | Core entity for all user actions |
+| **users** | 1,000-10,000 | User profiles & metadata | Core entity for all user actions |
+| **user_auth** | 1,000-10,000 | Password hashes & auth security | 1:1 with users |
 | **courts** | 5-20 | Tennis/Pickleball facilities | Referenced by bookings |
 | **bookings** | 5,000-50,000 | Court reservations | Links users, courts, trainers, packages |
 | **trainers** | 5-15 | Professional trainers | Linked to users, schedules, bookings |
@@ -200,7 +201,9 @@ erDiagram
 | **ai_recommendations** | 1,000-10,000 | AI-generated suggestions | Links users to suggested actions |
 | **telegram_users** | 100-1,000 | Telegram account links | Links platform users to Telegram |
 
-**Total Tables:** 14 core tables
+**Total Tables:** 15 core tables
+- 14 business logic tables
+- 1 authentication security table (`user_auth`)
 
 ### 2.3 Critical Database Functions
 
@@ -284,9 +287,31 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 ```
 
-### 2.4 Row Level Security (RLS) Policies
+### 2.4 Security Model
 
-#### Users Table
+#### Current Implementation: Application-Layer Authentication
+
+The platform uses **JWT authentication at the application layer** with the following approach:
+
+**Authentication Flow:**
+1. User credentials validated by API
+2. JWT token issued with user_id, user_type, and app_role
+3. Token sent in `Authorization: Bearer <token>` header
+4. API middleware validates token and extracts user context
+5. Database queries filtered by authenticated user_id
+
+**Security Table:**
+- `user_auth` table stores password hashes separately from user profiles
+- Failed login tracking and account locking
+- Password reset token management
+
+#### Optional: Row Level Security (RLS) Policies
+
+For enhanced defense-in-depth, RLS can be enabled at the database layer. The policies below are reference examples (currently commented out in implementation).
+
+**Note:** Enabling RLS requires creating an `auth.uid()` function and configuring the database connection to set user context.
+
+##### Users Table (Example - Not Active)
 ```sql
 -- Users can view their own profile
 CREATE POLICY users_select_own ON users
@@ -303,7 +328,7 @@ CREATE POLICY users_admin_all ON users
     );
 ```
 
-#### Bookings Table
+##### Bookings Table (Example - Not Active)
 ```sql
 -- Users see own bookings
 CREATE POLICY bookings_select_own ON bookings
@@ -1200,8 +1225,8 @@ VALUES
 This Platform Architecture Schema provides a complete technical blueprint for the Red Clay Tennis Booking Platform. It consolidates:
 
 - ✅ System architecture & technology stack
-- ✅ Complete data model with 14 tables
-- ✅ Authentication & authorization model
+- ✅ Complete data model with 15 tables (including security table)
+- ✅ JWT authentication with application-layer security model
 - ✅ 12 core automation workflows
 - ✅ RESTful API structure
 - ✅ Frontend component architecture

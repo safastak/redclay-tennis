@@ -11,7 +11,6 @@ Core booking system features (Weeks 1-3):
 - [03 - Booking Management](phase-1-mvp/03-booking-management.md)
 - [08 - Admin Dashboard](phase-1-mvp/08-admin-dashboard.md)
 
-## Phase 2: Revenue Features
 
 Package system and monetization (Weeks 4-6):
 
@@ -20,9 +19,8 @@ Package system and monetization (Weeks 4-6):
 - [06 - Session Sharing](phase-2-revenue/06-session-sharing.md)
 - [07 - Trainer Portal](phase-2-revenue/07-trainer-portal.md)
 
-## Phase 3: Advanced Features
 
-Notifications and AI (Weeks 7-9):
+Notifications and AI :
 
 - [09 - Notifications](phase-3-advanced/09-notifications.md)
 - [10 - Telegram Integration](phase-3-advanced/10-telegram-integration.md)

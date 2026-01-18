@@ -1,24 +1,46 @@
 # Database Schema - Neon PostgreSQL
 
-Complete database schema for the Red Clay tennis booking platform, designed for Neon PostgreSQL with Row Level Security (RLS).
+Complete database schema for the Red Clay tennis booking platform, designed for Neon PostgreSQL.
 
 ---
 
 ## Overview
 
-**Database:** Neon PostgreSQL
-**Security Model:** Row Level Security (RLS) for all user-facing tables
+**Database:** Neon PostgreSQL (Serverless)
+**Security Model:** Application-layer JWT authentication with optional Row Level Security (RLS)
+**UUID Generation:** `uuid-ossp` extension with `uuid_generate_v4()`
+**Migration Strategy:** Sequential migrations organized in 5 phases
 **Approach:** Relational data model with automated constraints and triggers
+
+---
+
+## Migration Strategy
+
+The schema is organized into 5 sequential migrations for organized deployment:
+
+1. **Migration 001:** Core tables (users, courts, bookings, trainers, schedules)
+2. **Migration 002:** Package system (package_classes, user_packages, peak_day_overrides, package_courts)
+3. **Migration 003:** Notifications & waitlist system
+4. **Migration 004:** Session sharing & booking invites
+5. **Migration 005:** Advanced features (AI recommendations, Telegram integration)
+
+This approach allows for:
+- ✅ Incremental deployment
+- ✅ Easy rollback capabilities
+- ✅ Clear feature boundaries
+- ✅ Testing per migration phase
+
+See `docs/database/migrations.sql` for the complete implementation.
 
 ---
 
 ## Core Tables
 
 ### `users`
-User accounts and authentication:
+User accounts and profiles:
 ```sql
 CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   full_name VARCHAR(255) NOT NULL,
   phone_number VARCHAR(20),
@@ -57,11 +79,45 @@ CREATE INDEX idx_users_app_role ON users(app_role);
 
 ---
 
+### `user_auth`
+Password hashes and authentication security data (separated for security best practices):
+```sql
+CREATE TABLE user_auth (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  password_hash TEXT NOT NULL,
+
+  -- Password management
+  password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reset_token TEXT,
+  reset_token_expires TIMESTAMP,
+
+  -- Security tracking
+  last_login_at TIMESTAMP,
+  failed_login_attempts INTEGER DEFAULT 0,
+  locked_until TIMESTAMP,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_auth_user_id ON user_auth(user_id);
+CREATE INDEX idx_user_auth_reset_token ON user_auth(reset_token);
+```
+
+**Security Features:**
+- Password hashes stored separately from user profiles
+- Rate limiting via `failed_login_attempts` and `locked_until`
+- Password reset token management
+- Tracks last login for security auditing
+
+---
+
 ### `courts`
 Tennis and pickleball courts:
 ```sql
 CREATE TABLE courts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(100) NOT NULL,
   sport_type VARCHAR(20) NOT NULL CHECK (sport_type IN ('tennis', 'pickleball')),
   surface VARCHAR(50),  -- "Clay", "Hard court", "Grass"
@@ -93,7 +149,7 @@ CREATE INDEX idx_courts_is_active ON courts(is_active);
 Court bookings with package and session sharing support:
 ```sql
 CREATE TABLE bookings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   court_id UUID NOT NULL REFERENCES courts(id) ON DELETE RESTRICT,
   trainer_id UUID REFERENCES trainers(id) ON DELETE SET NULL,
@@ -169,7 +225,7 @@ CREATE UNIQUE INDEX idx_bookings_unique_trainer_slot ON bookings(trainer_id, boo
 Professional trainers:
 ```sql
 CREATE TABLE trainers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   specialty TEXT,  -- "Tennis Coach", "Pickleball Instructor"
@@ -203,7 +259,7 @@ CREATE INDEX idx_trainers_rating ON trainers(rating DESC);
 Weekly recurring availability:
 ```sql
 CREATE TABLE trainer_schedules (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   trainer_id UUID NOT NULL REFERENCES trainers(id) ON DELETE CASCADE,
 
   -- Day and time
@@ -231,7 +287,7 @@ CREATE INDEX idx_trainer_schedules_day_of_week ON trainer_schedules(day_of_week)
 Available package types:
 ```sql
 CREATE TABLE package_classes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(100) NOT NULL,
   sport_type VARCHAR(20) NOT NULL CHECK (sport_type IN ('tennis', 'pickleball')),
 
@@ -268,7 +324,7 @@ CREATE INDEX idx_package_classes_is_active ON package_classes(is_active);
 Admin-designated peak days:
 ```sql
 CREATE TABLE peak_day_overrides (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   date DATE NOT NULL UNIQUE,
   reason VARCHAR(255),  -- "Tournament Day", "Special Event"
   created_by UUID NOT NULL REFERENCES users(id),
@@ -282,7 +338,7 @@ CREATE INDEX idx_peak_day_overrides_date ON peak_day_overrides(date);
 Links packages to eligible courts:
 ```sql
 CREATE TABLE package_courts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   court_id UUID NOT NULL REFERENCES courts(id) ON DELETE CASCADE,
   package_class_id UUID NOT NULL REFERENCES package_classes(id) ON DELETE CASCADE,
   is_active BOOLEAN DEFAULT true,
@@ -299,7 +355,7 @@ CREATE INDEX idx_package_courts_package_class_id ON package_courts(package_class
 Individual package purchases:
 ```sql
 CREATE TABLE user_packages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   package_class_id UUID NOT NULL REFERENCES package_classes(id) ON DELETE RESTRICT,
 
@@ -353,7 +409,7 @@ CREATE INDEX idx_user_packages_expires_at ON user_packages(expires_at);
 Invite friends to join bookings:
 ```sql
 CREATE TABLE booking_invites (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
   invited_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
@@ -391,7 +447,7 @@ CREATE INDEX idx_booking_invites_status ON booking_invites(status);
 Slot-specific waitlist:
 ```sql
 CREATE TABLE waitlists (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   sport_type VARCHAR(20) NOT NULL CHECK (sport_type IN ('tennis', 'pickleball')),
 
@@ -436,7 +492,7 @@ CREATE INDEX idx_waitlists_sport_type ON waitlists(sport_type);
 Multi-channel notifications:
 ```sql
 CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
   -- Content
@@ -481,7 +537,7 @@ CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
 AI-generated booking recommendations:
 ```sql
 CREATE TABLE ai_recommendations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
   -- Recommendation content
@@ -521,7 +577,7 @@ CREATE INDEX idx_ai_recommendations_expires_at ON ai_recommendations(expires_at)
 Links Telegram accounts to platform users:
 ```sql
 CREATE TABLE telegram_users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   telegram_id BIGINT NOT NULL UNIQUE,
   telegram_username VARCHAR(100),
@@ -544,8 +600,28 @@ CREATE INDEX idx_telegram_users_telegram_id ON telegram_users(telegram_id);
 
 ## Row Level Security (RLS) Policies
 
+### Current Implementation: Application-Layer Security
+
+**⚠️ Important:** In the current implementation (`docs/database/migrations.sql`), RLS policies are **commented out**.
+
+The platform currently uses **JWT authentication at the application layer** for the following reasons:
+- Simpler initial setup with standard Neon PostgreSQL
+- No need to configure `auth.uid()` function
+- Security enforced in API endpoints before database access
+- Easier to debug and test during development
+
+### Optional: Database-Level RLS (Future Enhancement)
+
+For enhanced security, you can enable Row Level Security at the database layer. This provides an additional security layer beyond application authentication.
+
+**To enable RLS, you must:**
+1. Create an `auth` schema and `auth.uid()` function to get the current user's ID
+2. Configure your application to set the user context on each database connection
+3. Uncomment the RLS policies in `migrations.sql` or use the examples below
+
 ### Enable RLS on all user-facing tables
 ```sql
+-- Note: Only enable this after setting up auth.uid() function
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_packages ENABLE ROW LEVEL SECURITY;
@@ -556,7 +632,11 @@ ALTER TABLE ai_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE telegram_users ENABLE ROW LEVEL SECURITY;
 ```
 
-### User policies
+### Example RLS Policies (Optional - Not Currently Active)
+
+The following policies show how RLS could be configured if enabled. These are reference examples only.
+
+#### User policies
 ```sql
 -- Users can view their own profile
 CREATE POLICY users_select_own ON users
@@ -579,7 +659,7 @@ CREATE POLICY users_update_admin ON users
   );
 ```
 
-### Booking policies
+#### Booking policies
 ```sql
 -- Users can view their own bookings
 CREATE POLICY bookings_select_own ON bookings
@@ -627,7 +707,7 @@ CREATE POLICY bookings_update_admin ON bookings
   );
 ```
 
-### Package policies
+#### Package policies
 ```sql
 -- Users can view their own packages
 CREATE POLICY user_packages_select_own ON user_packages
@@ -650,7 +730,7 @@ CREATE POLICY user_packages_update_admin ON user_packages
   );
 ```
 
-### Notification policies
+#### Notification policies
 ```sql
 -- Users can view their own notifications
 CREATE POLICY notifications_select_own ON notifications
@@ -797,5 +877,21 @@ All tables include optimized indexes for:
 - Composite indexes for common query patterns
 
 ---
+
+---
+
+## Summary
+
+**Total Tables:** 15 core tables
+- 14 documented in original schema
+- 1 additional (`user_auth`) for security best practices
+
+**Key Features:**
+- ✅ Complete relational model with proper constraints
+- ✅ Optimized indexes for all common query patterns
+- ✅ Helper functions for business logic (peak time detection, trainer availability)
+- ✅ Automated triggers for timestamps
+- ✅ Application-layer JWT authentication (RLS optional)
+- ✅ Sequential migration strategy for organized deployment
 
 **Next:** See [Authentication Model](./authentication.md) for user role management and [Automation Rules](./automation-rules.md) for cross-linking logic.
