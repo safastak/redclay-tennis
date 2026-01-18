@@ -292,6 +292,7 @@ Required environment variables (see `.env.example`):
 - Database queries must use parameterized queries (prevent SQL injection)
 - All async operations must have proper error boundaries
 - Use TanStack Query for client-side data fetching (caching + optimistic updates)
+- AVOID creating md files and instead update existing ones.
 
 ### Mobile-First UI Development
 

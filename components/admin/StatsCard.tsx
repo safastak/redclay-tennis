@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface StatsCardProps {
   title: string
@@ -11,43 +12,31 @@ interface StatsCardProps {
   color?: 'red' | 'blue' | 'green' | 'orange'
 }
 
-const colorStyles = {
-  red: 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400',
-  blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
-  green: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400',
-  orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
-}
-
 export default function StatsCard({
   title,
   value,
   icon: Icon,
   trend,
-  color = 'red',
 }: StatsCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between">
+    <Card>
+      <CardContent className="flex items-center justify-between p-6">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="mt-2 text-3xl font-bold">{value}</p>
           {trend && (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <span
-                className={`font-medium ${
-                  trend.value >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}
-              >
+            <p className="mt-2 text-sm text-muted-foreground">
+              <span className={trend.value >= 0 ? 'text-green-600' : 'text-red-600'}>
                 {trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}%
               </span>{' '}
               {trend.label}
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-lg ${colorStyles[color]}`}>
-          <Icon className="h-6 w-6" />
+        <div className="rounded-lg bg-primary/10 p-3">
+          <Icon className="h-6 w-6 text-primary" />
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

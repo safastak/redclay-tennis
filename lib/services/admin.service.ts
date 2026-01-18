@@ -87,8 +87,15 @@ export async function getAdminBookings(filters: AdminBookingFilters = {}) {
     params.slice(0, -2)
   )
 
+  // Transform string values to numbers for NUMERIC/DECIMAL columns
+  const bookings = result.rows.map(row => ({
+    ...row,
+    court_fee: row.court_fee ? parseFloat(row.court_fee) : null,
+    trainer_fee: row.trainer_fee ? parseFloat(row.trainer_fee) : null,
+  }))
+
   return {
-    bookings: result.rows,
+    bookings,
     total: parseInt(countResult.rows[0].total),
     page,
     limit,
@@ -252,9 +259,15 @@ export async function getAdminUsers(filters: AdminUserFilters = {}) {
 
   const result = await query(
     `SELECT
-      id, email, full_name, phone_number,
-      user_type, app_role, is_active,
-      created_at, updated_at
+      id,
+      email,
+      full_name as name,
+      phone_number as phone,
+      user_type,
+      app_role as role,
+      is_active,
+      created_at,
+      updated_at
     FROM users
     ${whereClause}
     ORDER BY created_at DESC
@@ -302,7 +315,7 @@ export async function updateUser(userId: string, updates: Partial<User>) {
      SET ${updateFields.join(', ')},
          updated_at = CURRENT_TIMESTAMP
      WHERE id = $${paramIndex}
-     RETURNING id, email, full_name, phone_number, user_type, app_role, is_active, created_at, updated_at`,
+     RETURNING id, email, full_name as name, phone_number as phone, user_type, app_role as role, is_active, created_at, updated_at`,
     values
   )
 

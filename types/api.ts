@@ -74,6 +74,30 @@ export interface BookingListResponse {
   }>
 }
 
+export interface CourtDetailResponse {
+  court: {
+    id: string
+    name: string
+    sportType: 'tennis' | 'padel'
+    surfaceType: string
+    hourlyRate: number
+    peakHourRate: number | null
+    isActive: boolean
+  }
+}
+
+export interface CourtAvailabilityResponse {
+  date: string
+  courtId: string
+  courtName: string
+  timeSlots: Array<{
+    startTime: string
+    endTime: string
+    available: boolean
+    isPeakTime: boolean
+  }>
+}
+
 export interface ErrorResponse {
   error: string
   details?: any

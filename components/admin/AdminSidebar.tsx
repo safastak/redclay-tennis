@@ -10,6 +10,8 @@ import {
   Clock,
   BarChart3,
 } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -25,10 +27,11 @@ export default function AdminSidebar() {
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 dark:bg-gray-950 px-6 pb-4">
+      <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r bg-card px-6 pb-4">
         <div className="flex h-16 shrink-0 items-center">
-          <h1 className="text-xl font-bold text-white">Red Clay Admin</h1>
+          <h1 className="text-xl font-bold">Red Clay Admin</h1>
         </div>
+        <Separator />
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
@@ -39,11 +42,12 @@ export default function AdminSidebar() {
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        className={`group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold ${
+                        className={cn(
+                          'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
                           isActive
-                            ? 'bg-red-600 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                        }`}
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        )}
                       >
                         <item.icon className="h-6 w-6 shrink-0" />
                         {item.name}

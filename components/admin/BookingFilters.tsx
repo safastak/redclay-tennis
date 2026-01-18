@@ -1,5 +1,10 @@
 'use client'
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+
 export default function BookingFilters({
   filters,
   onChange,
@@ -8,61 +13,56 @@ export default function BookingFilters({
   onChange: (filters: any) => void
 }) {
   return (
-    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {/* Status Filter */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Status
-        </label>
-        <select
-          value={filters.status || ''}
-          onChange={(e) =>
-            onChange({ ...filters, status: e.target.value || undefined })
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-2">
+        <Label htmlFor="status-filter">Status</Label>
+        <Select
+          value={filters.status || 'all'}
+          onValueChange={(value) =>
+            onChange({ ...filters, status: value === 'all' ? undefined : value })
           }
-          className="block w-full h-12 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
         >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+          <SelectTrigger id="status-filter">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Date From */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          From Date
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="date-from-filter">From Date</Label>
+        <Input
+          id="date-from-filter"
           type="date"
           value={filters.date_from || ''}
           onChange={(e) =>
             onChange({ ...filters, date_from: e.target.value || undefined })
           }
-          className="block w-full h-12 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
         />
       </div>
 
-      {/* Date To */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          To Date
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="date-to-filter">To Date</Label>
+        <Input
+          id="date-to-filter"
           type="date"
           value={filters.date_to || ''}
           onChange={(e) =>
             onChange({ ...filters, date_to: e.target.value || undefined })
           }
-          className="block w-full h-12 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
         />
       </div>
 
-      {/* Clear Filters */}
       <div className="flex items-end">
-        <button
+        <Button
+          variant="outline"
           onClick={() =>
             onChange({
               status: undefined,
@@ -72,10 +72,10 @@ export default function BookingFilters({
               page: 1,
             })
           }
-          className="w-full h-12 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          className="w-full"
         >
           Clear Filters
-        </button>
+        </Button>
       </div>
     </div>
   )

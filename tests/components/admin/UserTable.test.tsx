@@ -32,8 +32,9 @@ describe('UserTable Component', () => {
       />
     )
 
-    expect(screen.getByText('John Doe')).toBeInTheDocument()
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument()
+    // Now renders both mobile and desktop views, so we expect multiple elements
+    expect(screen.getAllByText('John Doe').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Jane Smith').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should render user emails correctly', () => {
@@ -45,8 +46,9 @@ describe('UserTable Component', () => {
       />
     )
 
-    expect(screen.getByText('john@example.com')).toBeInTheDocument()
-    expect(screen.getByText('jane@example.com')).toBeInTheDocument()
+    // Now renders both mobile and desktop views
+    expect(screen.getAllByText('john@example.com').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('jane@example.com').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should render phone numbers correctly', () => {
@@ -58,7 +60,8 @@ describe('UserTable Component', () => {
       />
     )
 
-    expect(screen.getByText('123-456-7890')).toBeInTheDocument()
+    // Now renders both mobile and desktop views
+    expect(screen.getAllByText('123-456-7890').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should render user roles correctly', () => {
@@ -70,8 +73,9 @@ describe('UserTable Component', () => {
       />
     )
 
-    expect(screen.getByText('user')).toBeInTheDocument()
-    expect(screen.getByText('admin')).toBeInTheDocument()
+    // Now renders both mobile and desktop views
+    expect(screen.getAllByText('user').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('admin').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should display empty state when no users', () => {
@@ -125,11 +129,11 @@ describe('UserTable API Compatibility', () => {
       />
     )
 
-    // Verify all fields render correctly
-    expect(screen.getByText('API User')).toBeInTheDocument()
-    expect(screen.getByText('api@example.com')).toBeInTheDocument()
-    expect(screen.getByText('555-0100')).toBeInTheDocument()
-    expect(screen.getByText('user')).toBeInTheDocument()
+    // Verify all fields render correctly (now renders both mobile and desktop)
+    expect(screen.getAllByText('API User').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('api@example.com').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('555-0100').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('user').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should NOT work with database field names', () => {

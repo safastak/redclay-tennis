@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
         ) : (
           <UserTable
             users={data?.users || []}
-            pagination={data?.pagination}
+            pagination={data ? { page: data.page, totalPages: data.totalPages } : undefined}
             onPageChange={(page) => setFilters({ ...filters, page })}
           />
         )}

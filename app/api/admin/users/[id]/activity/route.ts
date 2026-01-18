@@ -36,15 +36,15 @@ export async function GET(
     // Get user's packages
     const packagesResult = await query(
       `SELECT
-        up.id, up.purchased_at, up.expires_at,
+        up.id, up.requested_at, up.expires_at, up.status,
         up.remaining_court_only_sessions,
         up.remaining_trainer_sessions,
         p.name as package_name,
         p.price
       FROM user_packages up
-      JOIN packages p ON up.package_id = p.id
+      JOIN package_classes p ON up.package_class_id = p.id
       WHERE up.user_id = $1
-      ORDER BY up.purchased_at DESC`,
+      ORDER BY up.requested_at DESC`,
       [id]
     )
 

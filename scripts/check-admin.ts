@@ -8,7 +8,7 @@ import { pool } from '../lib/db'
 async function checkAdmin() {
   try {
     const result = await pool.query(
-      'SELECT id, email, name, role, user_type, created_at FROM users WHERE role = $1',
+      'SELECT id, email, full_name, app_role, user_type, created_at FROM users WHERE app_role = $1',
       ['admin']
     )
 
@@ -20,7 +20,7 @@ async function checkAdmin() {
     }
 
     // Also check all users
-    const allUsers = await pool.query('SELECT email, role FROM users')
+    const allUsers = await pool.query('SELECT email, full_name, app_role FROM users')
     console.log('\nAll users:')
     console.log(allUsers.rows)
 

@@ -4,6 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { removeFromWaitlist } from '@/lib/api/admin'
 import { formatDate, formatTime, formatRelativeTime } from '@/lib/utils'
 import { Mail, X } from 'lucide-react'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import UserTypeBadge from './UserTypeBadge'
 
 interface WaitlistEntry {
@@ -31,75 +34,66 @@ export default function WaitlistCard({ entry }: { entry: WaitlistEntry }) {
   })
 
   const handleContact = () => {
-    // Open email client or SMS
     window.location.href = `mailto:${entry.user_email}?subject=Waitlist Update for ${entry.court_name}`
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900 dark:text-white">{entry.user_name}</h3>
-            <UserTypeBadge type={entry.user_type} />
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold">{entry.user_name}</h3>
+              <UserTypeBadge type={entry.user_type} />
+            </div>
+            <p className="text-sm text-muted-foreground">{entry.user_email}</p>
+            <p className="text-sm text-muted-foreground">{entry.user_phone}</p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{entry.user_email}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{entry.user_phone}</p>
+          <span className="text-xs text-muted-foreground">
+            {formatRelativeTime(entry.created_at)}
+          </span>
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          {formatRelativeTime(entry.created_at)}
-        </span>
-      </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <Separator />
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <span className="text-muted-foreground">Court:</span>
+          <span className="font-medium text-right">{entry.court_name}</span>
 
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Court:</span>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {entry.court_name}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Desired Date:</span>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {formatDate(entry.desired_date)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Time:</span>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {formatTime(entry.desired_time)}
-          </span>
-        </div>
-        {entry.with_trainer && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Trainer:</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
-              {entry.trainer_name || 'Any trainer'}
-            </span>
-          </div>
-        )}
-      </div>
+          <span className="text-muted-foreground">Date:</span>
+          <span className="font-medium text-right">{formatDate(entry.desired_date)}</span>
 
-      <div className="flex gap-2">
-        <button
-          onClick={handleContact}
-          className="flex-1 inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 min-h-[48px]"
-        >
-          <Mail className="h-4 w-4 mr-1" />
-          Contact User
-        </button>
-        <button
+          <span className="text-muted-foreground">Time:</span>
+          <span className="font-medium text-right">{formatTime(entry.desired_time)}</span>
+
+          {entry.with_trainer && (
+            <>
+              <span className="text-muted-foreground">Trainer:</span>
+              <span className="font-medium text-right">
+                {entry.trainer_name || 'Any trainer'}
+              </span>
+            </>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="flex gap-2">
+        <Button variant="outline" onClick={handleContact} className="flex-1">
+          <Mail className="mr-2 h-4 w-4" />
+          Contact
+        </Button>
+        <Button
+          variant="destructive"
+          size="icon"
           onClick={() => {
             if (confirm('Remove this entry from waitlist?')) {
               removeMutation.mutate()
             }
           }}
           disabled={removeMutation.isPending}
-          className="inline-flex items-center justify-center rounded-md border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 min-h-[48px] min-w-[48px]"
         >
           <X className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }

@@ -1,22 +1,35 @@
+import { Badge } from "@/components/ui/badge"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+const statusVariants = cva("", {
+  variants: {
+    status: {
+      pending: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
+      confirmed: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+      rejected: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+      cancelled: "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20",
+      completed: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
+      no_show: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
+    },
+  },
+})
+
 type BookingStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed' | 'no_show'
 
-const statusStyles: Record<BookingStatus, string> = {
-  pending: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-  completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  no_show: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+const statusLabels: Record<BookingStatus, string> = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  rejected: 'Rejected',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
+  no_show: 'No Show',
 }
 
 export default function StatusBadge({ status }: { status: BookingStatus }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status]
-      }`}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
+    <Badge variant="outline" className={cn(statusVariants({ status }))}>
+      {statusLabels[status]}
+    </Badge>
   )
 }

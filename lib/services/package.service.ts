@@ -13,7 +13,7 @@ export async function getPackages(sportType?: 'tennis' | 'padel') {
   }
 
   const result = await query(
-    `SELECT * FROM packages
+    `SELECT * FROM package_classes
      ${whereClause}
      ORDER BY price ASC`,
     params
@@ -24,7 +24,7 @@ export async function getPackages(sportType?: 'tennis' | 'padel') {
 
 export async function getPackageById(packageId: string) {
   const result = await query(
-    'SELECT * FROM packages WHERE id = $1',
+    'SELECT * FROM package_classes WHERE id = $1',
     [packageId]
   )
 
@@ -47,7 +47,7 @@ export interface CreatePackageInput {
 
 export async function createPackage(input: CreatePackageInput) {
   const result = await query(
-    `INSERT INTO packages (
+    `INSERT INTO package_classes (
       name, description, price, sport_type,
       court_only_sessions, trainer_sessions, validity_days
     ) VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -95,7 +95,7 @@ export async function updatePackage(packageId: string, updates: Partial<Package>
   values.push(packageId)
 
   const result = await query(
-    `UPDATE packages
+    `UPDATE package_classes
      SET ${updateFields.join(', ')},
          updated_at = CURRENT_TIMESTAMP
      WHERE id = $${paramIndex}
@@ -119,7 +119,7 @@ export async function getUserPackages(userId: string) {
       p.description as package_description,
       p.sport_type
     FROM user_packages up
-    JOIN packages p ON up.package_id = p.id
+    JOIN package_classes p ON up.package_class_id = p.id
     WHERE up.user_id = $1
     ORDER BY up.created_at DESC`,
     [userId]
@@ -132,7 +132,7 @@ export async function purchasePackage(userId: string, packageId: string) {
   return transaction(async (client: PoolClient) => {
     // Get package details
     const packageResult = await client.query(
-      'SELECT * FROM packages WHERE id = $1 AND is_active = true',
+      'SELECT * FROM package_classes WHERE id = $1 AND is_active = true',
       [packageId]
     )
 
@@ -145,17 +145,20 @@ export async function purchasePackage(userId: string, packageId: string) {
     // Create user package (pending until payment)
     const userPackageResult = await client.query(
       `INSERT INTO user_packages (
-        user_id, package_id,
-        remaining_court_only_sessions,
-        remaining_trainer_sessions,
-        status
-      ) VALUES ($1, $2, $3, $4, 'pending')
+        user_id, package_class_id,
+        total_court_only_sessions, remaining_court_only_sessions,
+        total_trainer_sessions, remaining_trainer_sessions,
+        price_paid, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'requested')
       RETURNING *`,
       [
         userId,
         packageId,
         pkg.court_only_sessions,
+        pkg.court_only_sessions,
         pkg.trainer_sessions,
+        pkg.trainer_sessions,
+        pkg.price,
       ]
     )
 
@@ -172,7 +175,7 @@ export async function activatePackage(userPackageId: string) {
     const userPackageResult = await client.query(
       `SELECT up.*, p.validity_days
        FROM user_packages up
-       JOIN packages p ON up.package_id = p.id
+       JOIN package_classes p ON up.package_class_id = p.id
        WHERE up.id = $1`,
       [userPackageId]
     )
@@ -221,13 +224,13 @@ export async function getUserActivePackage(userId: string, sportType: 'tennis' |
   const result = await query(
     `SELECT up.*, p.name, p.sport_type
      FROM user_packages up
-     JOIN packages p ON up.package_id = p.id
+     JOIN package_classes p ON up.package_class_id = p.id
      WHERE up.user_id = $1
        AND up.status = 'active'
        AND p.sport_type = $2
-       AND up.expiry_date > CURRENT_TIMESTAMP
+       AND up.expires_at > CURRENT_TIMESTAMP
        AND (up.remaining_court_only_sessions > 0 OR up.remaining_trainer_sessions > 0)
-     ORDER BY up.expiry_date ASC
+     ORDER BY up.expires_at ASC
      LIMIT 1`,
     [userId, sportType]
   )

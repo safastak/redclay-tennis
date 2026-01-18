@@ -4,6 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, X } from 'lucide-react'
 import { updateBookingStatus } from '@/lib/api/admin'
 import { formatDate, formatTime } from '@/lib/utils'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import StatusBadge from './StatusBadge'
 
 interface Booking {
@@ -44,141 +48,171 @@ export default function BookingTable({
     },
   })
 
-  return (
-    <div className="mt-8 flow-root">
-      <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  User
-                </th>
-                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Court
-                </th>
-                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Date & Time
-                </th>
-                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Status
-                </th>
-                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Fee
-                </th>
-                <th className="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-              {bookings.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No bookings found
-                  </td>
-                </tr>
-              ) : (
-                bookings.map((booking) => (
-                  <tr key={booking.id}>
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {booking.user_name}
-                      </div>
-                      <div className="text-gray-500 dark:text-gray-400">{booking.user_email}</div>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {booking.court_name}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      <div>{formatDate(booking.booking_date)}</div>
-                      <div className="text-gray-400 dark:text-gray-500">
-                        {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm">
-                      <StatusBadge status={booking.status} />
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      ${((booking.court_fee || 0) + (booking.trainer_fee || 0)).toFixed(2)}
-                    </td>
-                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      {booking.status === 'pending' && (
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => approveMutation.mutate(booking.id)}
-                            disabled={approveMutation.isPending}
-                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 disabled:opacity-50 p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
-                            title="Approve booking"
-                          >
-                            <Check className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => rejectMutation.mutate(booking.id)}
-                            disabled={rejectMutation.isPending}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
-                            title="Reject booking"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 sm:px-6 mt-4">
-              <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                  onClick={() => onPageChange(pagination.page - 1)}
-                  disabled={pagination.page === 1}
-                  className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => onPageChange(pagination.page + 1)}
-                  disabled={pagination.page === pagination.totalPages}
-                  className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
-                >
-                  Next
-                </button>
-              </div>
-              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Showing page <span className="font-medium">{pagination.page}</span> of{' '}
-                    <span className="font-medium">{pagination.totalPages}</span>
-                  </p>
-                </div>
-                <div>
-                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                    <button
-                      onClick={() => onPageChange(pagination.page - 1)}
-                      disabled={pagination.page === 1}
-                      className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => onPageChange(pagination.page + 1)}
-                      disabled={pagination.page === pagination.totalPages}
-                      className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+  if (bookings.length === 0) {
+    return (
+      <div className="flex h-[450px] items-center justify-center rounded-lg border border-dashed">
+        <p className="text-sm text-muted-foreground">No bookings found</p>
       </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Mobile: Cards */}
+      <div className="lg:hidden space-y-4">
+        {bookings.map((booking) => (
+          <Card key={booking.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <h3 className="font-semibold leading-none">{booking.user_name}</h3>
+                  <p className="text-sm text-muted-foreground">{booking.user_email}</p>
+                </div>
+                <StatusBadge status={booking.status} />
+              </div>
+            </CardHeader>
+            <Separator />
+            <CardContent className="space-y-2 pt-3">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-muted-foreground">Court:</span>
+                <span className="font-medium text-right">{booking.court_name}</span>
+
+                <span className="text-muted-foreground">Date:</span>
+                <span className="font-medium text-right">{formatDate(booking.booking_date)}</span>
+
+                <span className="text-muted-foreground">Time:</span>
+                <span className="font-medium text-right">
+                  {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                </span>
+
+                <span className="text-muted-foreground">Fee:</span>
+                <span className="font-medium text-right">
+                  ${((booking.court_fee || 0) + (booking.trainer_fee || 0)).toFixed(2)}
+                </span>
+              </div>
+            </CardContent>
+            {booking.status === 'pending' && (
+              <>
+                <Separator />
+                <CardFooter className="pt-3">
+                  <div className="flex w-full gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => approveMutation.mutate(booking.id)}
+                      disabled={approveMutation.isPending}
+                      className="flex-1"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => rejectMutation.mutate(booking.id)}
+                      disabled={rejectMutation.isPending}
+                      className="flex-1"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Reject
+                    </Button>
+                  </div>
+                </CardFooter>
+              </>
+            )}
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop: Table */}
+      <div className="hidden lg:block rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Court</TableHead>
+              <TableHead>Date & Time</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Fee</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {bookings.map((booking) => (
+              <TableRow key={booking.id}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{booking.user_name}</div>
+                    <div className="text-sm text-muted-foreground">{booking.user_email}</div>
+                  </div>
+                </TableCell>
+                <TableCell>{booking.court_name}</TableCell>
+                <TableCell>
+                  <div>
+                    <div>{formatDate(booking.booking_date)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={booking.status} />
+                </TableCell>
+                <TableCell>
+                  ${((booking.court_fee || 0) + (booking.trainer_fee || 0)).toFixed(2)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {booking.status === 'pending' && (
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => approveMutation.mutate(booking.id)}
+                        disabled={approveMutation.isPending}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => rejectMutation.mutate(booking.id)}
+                        disabled={rejectMutation.isPending}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="flex-1 text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page + 1)}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

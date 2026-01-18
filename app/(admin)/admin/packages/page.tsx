@@ -5,7 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchAdminPackages, createPackage, updatePackage } from '@/lib/api/admin'
 import PackageRequestCard from '@/components/admin/PackageRequestCard'
 import PackageCard from '@/components/admin/PackageCard'
-import PackageFormModal from '@/components/admin/PackageFormModal'
+import PackageFormDialog from '@/components/admin/PackageFormDialog'
+import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
 export default function AdminPackagesPage() {
@@ -68,13 +69,13 @@ export default function AdminPackagesPage() {
   return (
     <div>
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Packages</h1>
+        <h1 className="text-2xl font-bold">Packages</h1>
       </div>
 
       {/* Pending Requests */}
       {pendingRequests.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-lg font-semibold mb-4">
             Pending Requests ({pendingRequests.length})
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -88,26 +89,26 @@ export default function AdminPackagesPage() {
       {/* Active Packages */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Active Packages</h2>
-          <button
+          <h2 className="text-lg font-semibold">Active Packages</h2>
+          <Button
             onClick={() => setIsModalOpen(true)}
-            className="lg:inline-flex hidden items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 min-h-[48px]"
+            className="hidden lg:inline-flex min-h-[48px]"
           >
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus className="h-4 w-4" />
             Create Package
-          </button>
+          </Button>
         </div>
 
         {packages.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400">No packages yet</p>
-            <button
+          <div className="text-center py-12 bg-card rounded-lg border">
+            <p className="text-sm text-muted-foreground">No packages yet</p>
+            <Button
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 inline-flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 min-h-[48px]"
+              className="mt-4 min-h-[48px]"
             >
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="h-4 w-4" />
               Create First Package
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,16 +121,17 @@ export default function AdminPackagesPage() {
 
       {/* Sticky Create Button (Mobile Only) */}
       <div className="lg:hidden fixed bottom-20 right-4 z-40">
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center rounded-full bg-red-600 p-4 text-white shadow-lg hover:bg-red-500 min-w-[56px] min-h-[56px]"
+          size="icon"
+          className="rounded-full p-4 shadow-lg min-w-[56px] min-h-[56px]"
         >
           <Plus className="h-6 w-6" />
-        </button>
+        </Button>
       </div>
 
-      {/* Package Form Modal */}
-      <PackageFormModal
+      {/* Package Form Dialog */}
+      <PackageFormDialog
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}

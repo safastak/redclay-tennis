@@ -2,6 +2,9 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { Edit, Eye } from 'lucide-react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 interface Package {
   id: string
@@ -25,62 +28,46 @@ export default function PackageCard({
   onEdit: (pkg: Package) => void
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900 dark:text-white">{pkg.name}</h3>
-            {pkg.is_active ? (
-              <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900 px-2 py-0.5 text-xs font-medium text-green-800 dark:text-green-200">
-                Active
-              </span>
-            ) : (
-              <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
-                Inactive
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{pkg.description}</p>
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg">{pkg.name}</CardTitle>
+          <Badge variant={pkg.is_active ? 'default' : 'secondary'}>
+            {pkg.is_active ? 'Active' : 'Inactive'}
+          </Badge>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Price</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            {formatCurrency(pkg.price)}
-          </p>
+        <p className="text-sm text-muted-foreground">{pkg.description}</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Price</p>
+            <p className="text-lg font-semibold">{formatCurrency(pkg.price)}</p>
+          </div>
+          {pkg.stats && (
+            <div>
+              <p className="text-xs text-muted-foreground">Revenue</p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(pkg.stats.total_revenue)}
+              </p>
+            </div>
+          )}
         </div>
         {pkg.stats && (
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {formatCurrency(pkg.stats.total_revenue)}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {pkg.stats && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {pkg.stats.total_sold} sold
           </p>
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => onEdit(pkg)}
-          className="flex-1 inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 min-h-[48px]"
-        >
-          <Edit className="h-4 w-4 mr-1" />
+        )}
+      </CardContent>
+      <CardFooter className="flex gap-2">
+        <Button variant="outline" onClick={() => onEdit(pkg)} className="flex-1">
+          <Edit className="mr-2 h-4 w-4" />
           Edit
-        </button>
-        <button className="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 min-h-[48px] min-w-[48px]">
+        </Button>
+        <Button variant="outline" size="icon">
           <Eye className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }

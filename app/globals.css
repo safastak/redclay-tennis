@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --background: 24 10% 98%; /* Warm white #FAFAF9 (stone-50) */
+    --foreground: 24 6% 10%; /* stone-900 #1C1917 */
+    --card: 0 0% 100%; /* Pure white for cards */
+    --card-foreground: 24 6% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 24 6% 10%;
 
-    /* RED as Primary (NOT Blue) - Critical for branding */
-    --primary: 0 72% 51%; /* Red-600 #DC2626 */
+    /* RED as Primary (NOT Blue) - Terra Cotta Red for Red Clay Tennis */
+    --primary: 6 65% 49%; /* Terra Cotta Red #C44536 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: 24 6% 97%; /* stone-100 */
+    --secondary-foreground: 24 6% 10%;
+    --muted: 24 6% 97%; /* stone-100 */
+    --muted-foreground: 25 5% 45%; /* stone-500 #78716C */
+    --accent: 24 6% 97%;
+    --accent-foreground: 24 6% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 0 72% 51%; /* RED ring for focus states */
+    --border: 20 6% 90%; /* stone-200 #E7E5E4 */
+    --input: 20 6% 90%;
+    --ring: 6 65% 49%; /* Terra Cotta RED ring for focus states */
 
     /* Status Colors */
     --success: 142 71% 45%; /* Green #10B981 */
@@ -44,28 +44,28 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --background: 24 6% 10%; /* stone-900 #1C1917 */
+    --foreground: 24 10% 98%; /* stone-50 #FAFAF9 */
+    --card: 24 10% 16%; /* stone-800 #292524 */
+    --card-foreground: 24 10% 98%;
+    --popover: 24 10% 16%;
+    --popover-foreground: 24 10% 98%;
 
-    /* RED Primary in dark mode */
-    --primary: 0 72% 51%;
+    /* Terra Cotta RED Primary in dark mode - slightly brighter */
+    --primary: 10 70% 60%; /* Clay Orange #E87461 for better visibility in dark mode */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --secondary: 24 6% 20%; /* stone-700 */
+    --secondary-foreground: 24 10% 98%;
+    --muted: 24 6% 20%;
+    --muted-foreground: 25 5% 65%; /* stone-400 */
+    --accent: 24 6% 20%;
+    --accent-foreground: 24 10% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 0 72% 51%; /* RED ring in dark mode */
+    --border: 24 6% 20%; /* stone-700 */
+    --input: 24 6% 20%;
+    --ring: 10 70% 60%; /* Clay Orange ring in dark mode */
   }
 }
 

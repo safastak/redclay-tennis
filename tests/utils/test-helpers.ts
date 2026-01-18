@@ -3,7 +3,7 @@ import { signToken } from '@/lib/auth/jwt'
 
 export async function createTestUser(overrides = {}) {
   const defaultUser = {
-    email: `test-${Date.now()}@example.com`,
+    email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`,
     full_name: 'Test User',
     user_type: 'premium',
     app_role: 'user',
@@ -13,6 +13,10 @@ export async function createTestUser(overrides = {}) {
   const result = await pool.query(
     `INSERT INTO users (email, full_name, user_type, app_role)
      VALUES ($1, $2, $3, $4)
+     ON CONFLICT (email) DO UPDATE SET
+       full_name = EXCLUDED.full_name,
+       user_type = EXCLUDED.user_type,
+       app_role = EXCLUDED.app_role
      RETURNING *`,
     [defaultUser.email, defaultUser.full_name, defaultUser.user_type, defaultUser.app_role]
   )

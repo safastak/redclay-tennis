@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const sportType = searchParams.get('sport_type')
 
     let queryText = `
-      SELECT id, name, sport_type, surface_type, hourly_rate, peak_hour_rate, is_active
+      SELECT id, name, sport_type, surface, hourly_rate, peak_hour_rate, is_active
       FROM courts
       WHERE is_active = true
     `
